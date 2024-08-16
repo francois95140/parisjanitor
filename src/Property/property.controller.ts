@@ -1,11 +1,19 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from "@nestjs/common";
-import { z } from "zod";
-import { PropertyService } from "./property.service";
-import { type } from "./property.entity";
-import { GetUser } from "../auth/decorators/user.decorator";
-import { UserResponse } from "../users/users.controller";
-import { UserRole } from "../users/users.entity";
-import { Roles } from "../auth/rules.decorator";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
+import { z } from 'zod';
+import { PropertyService } from './property.service';
+import { type } from './property.entity';
+import { GetUser } from '../auth/decorators/user.decorator';
+import { UserResponse } from '../users/users.controller';
+import { UserRole } from '../users/users.entity';
+import { Roles } from '../auth/rules.decorator';
 
 const addPropertySchema = z.object({
   number: z.number(),
@@ -81,9 +89,11 @@ export class PropertyController {
     };
   }
 
+  @Roles(UserRole.HOST)
   @Patch(':id/')
   async updateProperty(
     @Param('id') propertyId: string,
+    @GetUser() user: UserResponse,
     @Body() body: z.infer<typeof UpdatePropertySchema>,
   ): Promise<PropertyResponse> {
     const validProperty = UpdatePropertySchema.parse(body);
@@ -92,6 +102,7 @@ export class PropertyController {
     }*/
     const property = await this.propertyService.updatePropertyById(
       propertyId,
+      user.id,
       validProperty,
     );
 
@@ -127,6 +138,7 @@ export class PropertyController {
     };
   }
 
+  @Roles(UserRole.HOST)
   @Delete(':id/')
   async deleteProperty(
     @Param('id') propertyId: string,
